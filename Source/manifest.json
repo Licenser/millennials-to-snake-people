@@ -1,11 +1,11 @@
 {
 	"manifest_version": 2,
 
-	"name": "Millennials to Snake People",
-    "short_name": "Snake People",
-	"description": "Replaces the text 'Millennial' with 'Snake People'.",
-	"author": "Eric Bailey",
-	"version": "1.7",
+	"name": "Monocle Gate",
+    "short_name": "Monocle Gate",
+	"description": "Resolves Monocle Gate.",
+	"author": "",
+	"version": "1.0",
 
 	"icons": {
 		"16": "icon16.png",
@@ -17,7 +17,7 @@
 	"content_scripts":
 	[
 		{
-			"matches": ["*://*/*"],
+			"matches": ["https://robertsspaceindustries.com/spectrum/*"],
 			"all_frames": true,
 			"js": ["content_script.js"],
 			"run_at": "document_end"
