@@ -15,30 +15,39 @@ var mappings = {
 
   ":monocle:":  "https://robertsspaceindustries.com/media/f4w3rd1nhkc5pr/heap_infobox/TIMES-Logo.png",
   ":avocado:":  "https://robertsspaceindustries.com/media/6juj9eab23ml0r/heap_note/AVOCADO-Thumbnail.png",
-  ":fault:":    "https://robertsspaceindustries.com/media/qin1oeldb3u9er/heap_infobox/Avatar.png"
+  ":fault:":    "https://robertsspaceindustries.com/media/qin1oeldb3u9er/heap_infobox/Avatar.png",
+  ":spectrum:": "https://robertsspaceindustries.com/rsi/static/tavern/375fce0f6106c419dae47eed27240242.png",
+  ":benny:": "https://robertsspaceindustries.com/media/fwujzd6ti94eyr/heap_infobox/Benny.jpg"
 };
 
 function walk(rootNode)
 {
-    // Find all the text nodes in rootNode
-    var walker = document.createTreeWalker(
-        rootNode,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-    ),
-    node;
+
+  var walker = document.createTreeWalker(
+    rootNode,
+    NodeFilter.SHOW_TEXT,
+    null,
+    false
+  ),
+      node,
+      nodes = [];
 
   // Modify each text node's value
   while (node = walker.nextNode()) {
-    handleText(node);
+    nodes.push(node);
   }
+  for (i = 0; i < nodes.length; i++) {
+    handleText(nodes[i]);
+  };
 }
 
 function handleText(textNode) {
   var parent = textNode.parentNode;
-  if (textNode.nodeValue.match(/:\w+:/) && ! parent.getAttribute("data-text")) {
-    parent.innerHTML = replaceText(parent.innerHTML);
+  if (textNode.nodeValue.match(/:\w+:/) && parent && ! parent.getAttribute("data-text")) {
+    var changed = replaceText(parent.innerHTML);
+    if (changed != parent.innerHTML) {
+      parent.innerHTML = changed;
+    }
   }
 }
 
@@ -54,43 +63,43 @@ function replaceText(v)
 
 // The callback used for the document body and title observers
 function observerCallback(mutations) {
-    var i;
-
-    mutations.forEach(function(mutation) {
-        for (i = 0; i < mutation.addedNodes.length; i++) {
-            if (mutation.addedNodes[i].nodeType === 3) {
-              // Replace the text for text nodes
-              handleText(mutation.addedNodes[i]);
-            } else {
-                // Otherwise, find text nodes within the given node and replace text
-                walk(mutation.addedNodes[i]);
-            }
-        }
-    });
+  var i;
+  mutations.forEach(function(mutation) {
+    for (i = 0; i < mutation.addedNodes.length; i++) {
+      if (mutation.addedNodes[i].nodeType === 3) {
+        // Replace the text for text nodes
+        handleText(mutation.addedNodes[i]);
+      } else {
+        // Otherwise, find text nodes within the given node and replace text
+        walk(mutation.addedNodes[i]);
+      }
+    }
+  });
 }
 
 // Walk the doc (document) body, replace the title, and observe the body and title
 function walkAndObserve(doc) {
-    var docTitle = doc.getElementsByTagName('title')[0],
-    observerConfig = {
+  var docTitle = doc.getElementsByTagName('title')[0],
+      observerConfig = {
         characterData: true,
         childList: true,
         subtree: true
-    },
-    bodyObserver, titleObserver;
+      },
+      bodyObserver, titleObserver;
 
-    // Do the initial text replacements in the document body and title
-    walk(doc.body);
-    doc.title = replaceText(doc.title);
+  // Do the initial text replacements in the document body and title
+  walk(doc.body);
+  doc.title = replaceText(doc.title);
 
-    // Observe the body so that we replace text in any added/modified nodes
-    bodyObserver = new MutationObserver(observerCallback);
-    bodyObserver.observe(doc.body, observerConfig);
+  // Observe the body so that we replace text in any added/modified nodes
+  bodyObserver = new MutationObserver(observerCallback);
+  bodyObserver.observe(doc.body, observerConfig);
 
-    // Observe the title so we can handle any modifications there
-    if (docTitle) {
-        titleObserver = new MutationObserver(observerCallback);
-        titleObserver.observe(docTitle, observerConfig);
-    }
+  // Observe the title so we can handle any modifications there
+  if (docTitle) {
+    titleObserver = new MutationObserver(observerCallback);
+    titleObserver.observe(docTitle, observerConfig);
+  }
 }
+
 walkAndObserve(document);
